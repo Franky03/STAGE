@@ -1,134 +1,141 @@
 import math as m
 
-def calc_resultant_force(forces: list, angles: list):
-    """
-    Calculate the resultant force of a system of forces.
-    :param forces: list of forces
-    :param angles: list of angles
-    :return: dictionary with the x and y components, the resultant magnitude and the resultant direction
-    """
-    if len(forces) != len(angles):
-        raise ValueError("The number of forces and angles must be equal.")
+class StaticsSolver:
+
+    def __init__(self, forces, angles):
+        self.forces = forces
+        self.angles = angles
+        self.x_components = [force * m.cos(m.radians(angle)) for force, angle in zip(self.forces, self.angles)]
+        self.y_components = [force * m.sin(m.radians(angle)) for force, angle in zip(self.forces, self.angles)]
+
     
-    x_component = 0
-    y_component = 0
+    def calc_resultant_force(self):
+        x_component = sum(self.x_components)
+        y_component = sum(self.y_components)
 
-    for index, force in enumerate(forces):
+        resultant_magnitude = m.sqrt(x_component**2 + y_component**2)
+        resultant_direction = m.degrees(m.atan2(y_component, x_component))
 
-        angles[index] = m.radians(angles[index]) # Convert to radians
-
-        x_component += force * m.cos(angles[index])
-        y_component += force * m.sin(angles[index])
-        print(f"X: {x_component}, Y: {y_component}")
-        
-
-    x_component = round(x_component, 4)
-    y_component = round(y_component, 4)
-
-
-    resultant_magnitude = m.sqrt(x_component**2 + y_component**2)
-    resultant_magnitude = round(resultant_magnitude, 4)
-
-    resultant_direction = 0.0
-
-    if x_component == 0.0 and y_component == 0.0:
-        resultant_direction = 0.0
-    elif x_component == 0.0 and y_component > 0.0:
-        resultant_direction = 90.0
-    elif x_component == 0.0 and y_component < 0.0:
-        resultant_direction = -90.0
-    else:
-        resultant_direction = m.atan2(y_component, x_component)
-        resultant_direction = m.degrees(resultant_direction)
+        return {
+            "x_component": x_component,
+            "y_component": y_component,
+            "resultant_magnitude": resultant_magnitude,
+            "resultant_direction": resultant_direction
+        }
     
-    return {
-        "x_component": x_component,
-        "y_component": y_component,
-        "resultant_magnitude": resultant_magnitude,
-        "resultant_direction": resultant_direction
-    }
+    def calc_moment(self, f_positions):
 
-def distribute_force(force: list, x: float, type: str, **kwargs):
-    """
-    Distribute a force in a beam.
-    :param force: list of forces
-    :param x: length of the beam
-    :param type: type of force distribution
-    :param kwargs: keyword arguments (orientation for triangle force distribution)
-    :return: dictionary with the resultant force and the point of application
+        if not isinstance(f_positions, list):
+            f_positions = [f_positions]
 
-    """
+        if len(self.forces) != len(f_positions):
+            raise ValueError("The number of forces and positions must be equal.")
+        
+        moments = [force * f_position for force, f_position in zip(self.y_components, f_positions)]
+
+        return sum(moments)
     
-    if not isinstance(force, list):
-        force = [force]
+    def calc_vertical_reaction(self, f_positions, b_position):
 
-    result = {}
+        if not isinstance(f_positions, list):
+            f_positions = [f_positions]
 
-    if type == 'triangle':
-        orientation = kwargs.get('orientation')
+        if len(self.forces) != len(f_positions):
+            raise ValueError("The number of forces and positions must be equal.")
 
-        if orientation not in ['left', 'right']:
-            raise ValueError("Invalid orientation for triangle force distribution.")
+        b_reaction =  (- self.calc_moment(f_positions)) / b_position
+        a_reaction = (self.calc_resultant_force()['y_component']) - b_reaction
 
-        r_force = x * force[0] / 2
-        
-        if orientation == 'left':
-            point = x/3
-        elif orientation == 'right':
-            point = x - x/3
-        
-        result = {
-            "r_force": round(r_force, 4),
-            "point": round(point, 4)
+        return {
+            'a_reaction': a_reaction,
+            'b_reaction': b_reaction
         }
 
-    elif type == 'rectangle':
-        r_force = x * force[0]
-        point = x/2
+    def calc_horizontal_reaction(self, f_positions, b_position, **kwargs):
+        if len(self.x_components) == 0:
+            return 0
+        
+        if not isinstance(f_positions, list):
+            f_positions = [f_positions]
+        
+        if len(self.forces) != len(f_positions):
+            raise ValueError("The number of forces and positions must be equal.")
+        
+        num_horizontal_reactions = kwargs.get('num_horizontal_reactions')
 
-        result = {
-            "r_force": round(r_force, 4),
-            "point": round(point, 4)
-        }
+        if num_horizontal_reactions > 1:
+            raise ValueError("The number of horizontal reactions must be 0 or 1.")
+        
+        h_reaction =  - sum(self.x_components)
 
-    elif type == 'trapezoid':
-        # divide into triangle and rectangle
-        force = force[:2]
-        force_triangle = max(force) - min(force)
-        force_rectangle = min(force)
-
-        # recursive call
-        triangle = distribute_force([force_triangle], x, 'triangle', orientation= kwargs.get('orientation'))
-        rectangle = distribute_force([force_rectangle], x, 'rectangle')
-
-        r_forces = {'triangle': triangle['r_force'], 'rectangle': rectangle['r_force']}
-
-        points = {'triangle': triangle['point'], 'rectangle': rectangle['point']}
-
-        result = {
-            'r_force': r_forces,
-            'point': points
-        }
-
-    else:
-        raise ValueError("Invalid type of force distribution.")
+        return h_reaction
     
-    return result
+    def calc_distributed_force(self, x, type, **kwargs):
+        """
+        Distribute a force in a beam.
+        :param force: list of forces
+        :param x: length of the beam
+        :param type: type of force distribution
+        :param kwargs: keyword arguments (orientation for triangle force distribution)
+        :return: dictionary with the resultant force and the point of application
 
-def calc_moment(force: list, f_positions: list, **kwargs):
+        """
+        
+        if not isinstance(self.forces, list):
+            self.forces = [self.forces]
 
-    if not isinstance(force, list):
-        force = [force]
+        result = {}
 
-    if not isinstance(f_positions, list):
-        f_positions = [f_positions]
+        if type == 'triangle':
+            orientation = kwargs.get('orientation')
 
-    if len(force) != len(f_positions):
-        raise ValueError("The number of forces and positions must be equal.")
+            if orientation not in ['left', 'right']:
+                raise ValueError("Invalid orientation for triangle force distribution.")
 
-    result = 0
+            r_force = x * self.forces[0] / 2
+            
+            if orientation == 'left':
+                point = x/3
+            elif orientation == 'right':
+                point = x - x/3
+            
+            result = {
+                "r_force": round(r_force, 4),
+                "point": round(point, 4)
+            }
 
-    for index, f in enumerate(force):
-        result += f * f_positions[index]
+        elif type == 'rectangle':
+            r_force = x * self.forces[0]
+            point = x/2
 
-    return result
+            result = {
+                "r_force": round(r_force, 4),
+                "point": round(point, 4)
+            }
+
+        elif type == 'trapezoid':
+            # divide into triangle and rectangle
+            force = self.forces[:2]
+            force_triangle = max(force) - min(force)
+            force_rectangle = min(force)
+
+            # recursive call
+            triangle = self.calc_distributed_force(x, 'triangle', orientation= kwargs.get('orientation'))
+            rectangle = self.calc_distributed_force(x, 'rectangle')
+
+            r_forces = {'triangle': triangle['r_force'], 'rectangle': rectangle['r_force']}
+
+            points = {'triangle': triangle['point'], 'rectangle': rectangle['point']}
+
+            result = {
+                'r_force': r_forces,
+                'point': points
+            }
+
+        else:
+            raise ValueError("Invalid type of force distribution.")
+        
+        return result
+
+class CentroidSolver:
+    

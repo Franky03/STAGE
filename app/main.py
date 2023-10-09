@@ -4,18 +4,19 @@ import os
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from utils import *
+from utils import StaticsSolver
 
-forces = [20, 30, 40]
-angles = [30, 45, 60]
+solver = StaticsSolver(forces=[8000, -3000], angles=[90, 90])
 
-result = calc_resultant_force(forces, angles)
-print(result)
+print(solver.calc_resultant_force())
 
-# força distribuida
+distances_a = [2, 6]
+print(solver.calc_moment(distances_a))
 
-force = [10, 20]
-x = 10
+print(
+    solver.calc_vertical_reaction(
+        f_positions=[2, 6],
+        b_position=4
+    )
+)
 
-result = distribute_force(force, x, 'trapezoid', orientation='left')
-print(result)
