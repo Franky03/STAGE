@@ -1,0 +1,23 @@
+.cartesian-plane {
+    text-align: center;
+    margin: 20px;
+}
+
+#vector-display {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border: 1px solid #000;
+    margin: 10px;
+}
+
+#input-fields {
+    margin: 10px;
+}
+
+input, button {
+    margin: 5px;
+}
+
+button {
+    padding: 5px 10px;
+}
