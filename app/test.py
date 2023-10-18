@@ -30,8 +30,8 @@ def send_data():
     solver = StaticsSolver(forces=forces, angles=angles)
     print(solver.calc_resultant_force())
  
-    response_data = {"message": "Dados recebidos com sucesso!"}
-    return jsonify(response_data)
+    response_data = {"code": 200, "resultant": solver.calc_resultant_force()}
+    return jsonify(response_data)   
 
 if __name__ == '__main__':
     app.run(debug=True)

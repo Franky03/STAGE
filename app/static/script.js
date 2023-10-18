@@ -49,6 +49,7 @@ canvas.addEventListener('click', (event) => {
             const adjustedOriginY = originY - y * 6;
 
             vectors.push({ x, y, force, angle, originX: adjustedOriginX, originY: adjustedOriginY });
+            console.log(vectors);
             updateCanvas();
         }
     }
@@ -154,6 +155,25 @@ function drawVector(x, y, force, originX, originY) {
     
 }
 
+function drawResultantVector(resultantVector) {
+    const resultantMagnitude = document.getElementById("resultant-magnitude");
+    const resultantDirection = document.getElementById("resultant-direction");
+
+    resultantMagnitude.textContent = `Magnitude: ${resultantVector.resultant_magnitude}`;
+    resultantDirection.textContent = `Direction: ${resultantVector.resultant_direction} degrees`;
+
+    // Agora você pode desenhar o vetor no Canvas usando as informações do resultado
+    const magnitude = resultantVector.resultant_magnitude; // Use a magnitude para definir o comprimento do vetor
+    const direction = resultantVector.resultant_direction; // Use a direção para definir o ângulo do vetor
+
+    const radians = (direction * Math.PI) / 180; // Converter graus em radianos
+    const x = magnitude * Math.cos(radians);
+    const y = magnitude * Math.sin(radians);
+
+    // Desenhe o vetor no Canvas, você pode usar a função drawVector que você já tem
+    drawVector(x, y, magnitude, canvas.width / 2, canvas.height / 2);
+}
+
 document.getElementById("get-vectors").addEventListener("click", function () {
     
     // Realizar uma solicitação POST ao servidor Flask
@@ -168,6 +188,9 @@ document.getElementById("get-vectors").addEventListener("click", function () {
     .then(result => {
         // Manipular a resposta do Flask (se necessário)
         console.log(result);
+        if (result.resultant) {
+            drawResultantVector(result.resultant);
+        }
     })
     .catch(error => {
         console.error("Erro ao enviar dados:", error);
