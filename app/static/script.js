@@ -108,6 +108,7 @@ canvas.addEventListener('click', (event) => {
             const adjustedOriginY = originY - y * 6;
 
             vectors.push({ x, y, force, angle, originX: adjustedOriginX, originY: adjustedOriginY });
+            console.log(vectors);
             updateCanvas();
         }
     }
@@ -222,8 +223,59 @@ function drawVectors() {
     }
 }
 
+function drawVector(x, y, force, originX, originY) {
+    const vectorScale = 6;
+    const arrowSize = 6;
+
+    const arrowX = originX + x * vectorScale;
+    const arrowY = originY + y * vectorScale; // Altere de "-" para "+"
+
+    context.beginPath();
+    context.moveTo(originX, originY);
+    context.lineTo(arrowX, arrowY);
+    context.stroke();
+
+    const angle = Math.atan2(y, x); // Remova o sinal negativo
+
+    context.beginPath();
+    context.moveTo(arrowX, arrowY);
+    context.lineTo(arrowX - arrowSize * Math.cos(angle - Math.PI / 6), arrowY - arrowSize * Math.sin(angle - Math.PI / 6));
+    context.lineTo(arrowX - arrowSize * Math.cos(angle + Math.PI / 6), arrowY - arrowSize * Math.sin(angle + Math.PI / 6));
+    context.closePath();
+    context.fill();
+
+    context.font = "14px Arial";
+    // fazer com que identifique kN e N
+    if(kn){
+        context.fillText(`${force}kN`, originX, originY);
+    }
+    else{
+        context.fillText(`${force}N`, originX, originY);
+    }
+    
+}
+
+function drawResultantVector(resultantVector) {
+    const resultantMagnitude = document.getElementById("resultant-magnitude");
+    const resultantDirection = document.getElementById("resultant-direction");
+
+    resultantMagnitude.textContent = `Magnitude: ${resultantVector.resultant_magnitude}`;
+    resultantDirection.textContent = `Direction: ${resultantVector.resultant_direction} degrees`;
+
+    // Agora você pode desenhar o vetor no Canvas usando as informações do resultado
+    const magnitude = resultantVector.resultant_magnitude; // Use a magnitude para definir o comprimento do vetor
+    const direction = resultantVector.resultant_direction; // Use a direção para definir o ângulo do vetor
+
+    const radians = (direction * Math.PI) / 180; // Converter graus em radianos
+    const x = magnitude * Math.cos(radians);
+    const y = magnitude * Math.sin(radians);
+
+    // Desenhe o vetor no Canvas, você pode usar a função drawVector que você já tem
+    drawVector(x, y, magnitude, canvas.width / 2, canvas.height / 2);
+}
 
 document.getElementById("get-vectors").addEventListener("click", function () {
+    
     // Realizar uma solicitação POST ao servidor Flask
     fetch("/get-vectors", {
         method: "POST",
@@ -232,12 +284,15 @@ document.getElementById("get-vectors").addEventListener("click", function () {
             "Content-Type": "application/json"
         }
     })
-        .then(response => response.json())
-        .then(result => {
-            // Manipular a resposta do Flask (se necessário)
-            console.log(result);
-        })
-        .catch(error => {
-            console.error("Erro ao enviar dados:", error);
-        });
+    .then(response => response.json())
+    .then(result => {
+        // Manipular a resposta do Flask (se necessário)
+        console.log(result);
+        if (result.resultant) {
+            drawResultantVector(result.resultant);
+        }
+    })
+    .catch(error => {
+        console.error("Erro ao enviar dados:", error);
+    });
 });
