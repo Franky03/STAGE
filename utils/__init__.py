@@ -137,5 +137,62 @@ class StaticsSolver:
         
         return result
 
-class CentroidSolver:
-    
+# class CentroidSolver:
+class CentrodeMassa:
+
+        def calcular_centro_de_massa(particulas):
+            soma_massas = 0
+            soma_x_pesos = 0
+            soma_y_pesos = 0
+
+            for particula in particulas:
+                massa = particula['massa']
+                x = particula['x']
+                y = particula['y']
+
+                soma_massas += massa
+                soma_x_pesos += massa * x
+                soma_y_pesos += massa * y
+
+            centro_de_massa_x = soma_x_pesos / soma_massas
+            centro_de_massa_y = soma_y_pesos / soma_massas
+
+            return centro_de_massa_x, centro_de_massa_y
+
+        # Exemplo de uso
+        particulas = [
+            {'massa': 2, 'x': 0, 'y': 0},
+            {'massa': 3, 'x': 1, 'y': 2},
+            {'massa': 5, 'x': 4, 'y': 1}
+        ]
+
+        centro_de_massa = calcular_centro_de_massa(particulas)
+        print(f"Centro de Massa: ({centro_de_massa[0]}, {centro_de_massa[1]})")
+class Centroide:
+    def calcular_centroide_com_comprimentos(pontos, comprimentos):
+        # Inicialize as somas para x, y, z e os somatórios dos comprimentos
+        soma_x = 0
+        soma_y = 0
+        soma_z = 0
+        soma_comprimentos = 0
+
+        # Loop através dos pontos e comprimentos
+        for ponto, comprimento in zip(pontos, comprimentos):
+            x, y, z = ponto
+            soma_x += x * comprimento
+            soma_y += y * comprimento
+            soma_z += z * comprimento
+            soma_comprimentos += comprimento
+
+        # Calcule o centroide
+        centroide_x = soma_x / soma_comprimentos
+        centroide_y = soma_y / soma_comprimentos
+        centroide_z = soma_z / soma_comprimentos
+
+        return centroide_x, centroide_y, centroide_z
+
+    # Exemplo de uso
+    pontos = [(0, 100, 0), (127.32, 127.32, 0), (200, 0, 200), (100, 0, 200)]
+    comprimentos = [200, 314.15, 400, 447.21]
+    centroide = calcular_centroide_com_comprimentos(pontos, comprimentos)
+    print(f"Centroide: ({centroide[0]}, {centroide[1]}, {centroide[2]})")

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Desenho de Vetores 2D</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            border: 1px solid #000;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input, button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="vector-canvas" width="1000" height="600"></canvas>
+        
+    </div>
+    <div class="input-container">
+        <input type="number" id="force-input" placeholder="Força">
+        <input type="number" id="angle-input" placeholder="Ângulo (em graus)">
+        <button id="toggle-add-vector">Iniciar/Parar Adição de Vetores</button>
+        <button id="undo-vector">Desfazer Último Vetor</button>
+        <button id="clear-vectors">Limpar Vetores</button>
+        <button id="get-vectors">Obter Vetores</button>
+    </div>
+
+    <script src="../static/script.js"></script>
+    
+    
+</body>
+</html>
