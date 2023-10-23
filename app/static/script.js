@@ -11,24 +11,32 @@ let isAddingVectors = false;
 
 let selectedOriginX = null;
 let selectedOriginY = null;
-let isDraggingBarra = false;
+const ctx = canvas.getContext('2d');
+let isDragging = false;
+let isDraggingTriangle = false;
 let offsetX = 0;
 let offsetY = 0;
-let barraX = 100;  // Posição inicial da barra
-let barraY = 300;
+let offsetX_T = 0;
+let offsetY_T = 0;
+let barraX = canvas.width/2;  // Posição inicial da barra
+let barraY = canvas.height/2 - 20;
 let barraComprimento = 300;
 let barraAltura = 20;
+
+var triangleX = canvas.width/2; // Coordenada X do vértice superior do triângulo
+var triangleY = canvas.height/2 - 20; // Coordenada Y do vértice superior do triângulo
+var triangleBase = 20; // Largura da base do triângulo
+var triangleHeight = 20; // Altura do triângulo
+
+const triangles = [];
+const maxTriangles = 2;
 
 let kn = false;
 
 updateCanvas();
-
-
-const ctx = canvas.getContext('2d');
-        let isDragging = false;
-
+console.log(triangles)
       
-
+// Barra
 canvas.addEventListener('mousedown', (e) => {
     const mouseX = e.clientX - canvas.getBoundingClientRect().left;
     const mouseY = e.clientY - canvas.getBoundingClientRect().top;
@@ -41,6 +49,7 @@ canvas.addEventListener('mousedown', (e) => {
     }
 });
 
+// Barra
 canvas.addEventListener('mousemove', (e) => {
     if (isDragging) {
         const mouseX = e.clientX - canvas.getBoundingClientRect().left;
@@ -56,30 +65,100 @@ canvas.addEventListener('mousemove', (e) => {
     }
 });
 
-canvas.addEventListener('mouseup', () => {
-    isDragging = false;
+// Triângulo
+canvas.addEventListener('mousedown', (e) => {
+    const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+    const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+    for (const triangle of triangles) {
+        if (mouseX >= triangle.x && mouseX <= triangle.x + triangle.base && mouseY >= triangle.y && mouseY <= triangle.y + triangle.height) {
+            isDraggingTriangle = true;
+            offsetX_T = mouseX - triangle.x;
+            offsetY_T = mouseY - triangle.y;
+        }
+    }
 });
 
-function drawBarra() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'blue'; // Cor da barra
-    ctx.fillRect(barraX, barraY, barraComprimento, barraAltura);
+// Triângulo
+canvas.addEventListener('mousemove', (e) => {
+    if (isDraggingTriangle) {
+        const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+        const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+        const movingTriangle = triangles.find((triangle) => {
+            return (
+                mouseX >= triangle.x &&
+                mouseX <= triangle.x + triangle.base &&
+                mouseY >= triangle.y &&
+                mouseY <= triangle.y + triangle.height
+            );
+        });
+
+        if (movingTriangle) {
+            movingTriangle.x = mouseX - offsetX_T;
+            movingTriangle.y = mouseY - offsetY_T;
+            updateCanvas();
+        }
+    }
+});
+
+
+function drawTriangle(triangle) {
+    ctx.beginPath();
+    ctx.moveTo(triangle.x, triangle.y + triangle.height); // Vértice inferior
+    ctx.lineTo(triangle.x + triangle.base, triangle.y + triangle.height); // Vértice direito
+    ctx.lineTo(triangle.x + (triangle.base / 2), triangle.y); // Vértice superior
+    ctx.closePath();
+
+    ctx.fillStyle = 'gray';
+    ctx.fill();
+    ctx.stroke();
 }
 
+function addTriangle(x, y) {
+    if (triangles.length < maxTriangles) {
+        let overlap = false;
+        const newTriangle = { x, y, base: 20, height: 24 }; // Defina a base e altura desejadas
+
+        // Verifique se a nova posição se sobrepõe a algum triângulo existente
+        for (const triangle of triangles) {
+            if (
+                x < triangle.x + triangle.base &&
+                x + newTriangle.base > triangle.x &&
+                y < triangle.y + triangle.height &&
+                y + newTriangle.height > triangle.y
+            ) {
+                overlap = true;
+                break;
+            }
+        }
+
+        if (!overlap) {
+            triangles.push(newTriangle);
+            updateCanvas();
+        } else {
+            alert("Triângulos não podem se sobrepor.");
+        }
+    } else {
+        alert("Limite máximo de triângulos atingido.");
+    }
+}
+
+document.getElementById('add-support').addEventListener('click', () => {
+    addTriangle(canvas.width/2 - 20, canvas.height/2 -20);
+});
+
+canvas.addEventListener('mouseup', () => {
+    isDraggingTriangle = false;
+});
+
+
+canvas.addEventListener('mouseup', () => {
+    isDragging= false;
+});
+
+
 drawBarra(); // Inicialmente, desenhe a barra na posição inicial
-
-
-        
-
-
-
-
-
-
-
-
-
-
 
 document.getElementById("toggle-add-vector").addEventListener("click", () => {
     isAddingVectors = !isAddingVectors; // Inverta o estado
@@ -91,6 +170,7 @@ document.getElementById("toggle-add-vector").addEventListener("click", () => {
 });
 
 canvas.addEventListener('click', (event) => {
+    console.log("CLICK")
     if (isAddingVectors) {
         const rect = canvas.getBoundingClientRect();
         const originX = event.clientX - rect.left;
@@ -134,6 +214,8 @@ function drawBarra() {
     context.stroke();
 }
 
+
+
 function drawVector(x, y, force, originX, originY) {
     const vectorScale = 6;
     const arrowSize = 6;
@@ -157,9 +239,10 @@ function drawVector(x, y, force, originX, originY) {
 
     context.font = "14px Arial";
     if (kn) {
-        context.fillText(`${force}kN`, originX, originY);
+        context.fillText(`${force.toFixed(2)}kN`, originX, originY);
+        
     } else {
-        context.fillText(`${force}N`, originX, originY);
+        context.fillText(`${force.toFixed(2)}N`, originX, originY);
     }
 }
 
@@ -215,6 +298,10 @@ function updateCanvas() {
     drawAxes(); // Desenha o plano cartesiano
     drawVectors(); // Desenha os vetores
     drawBarra(); // Desenha a barra
+
+    for (const triangle of triangles) {
+        drawTriangle(triangle);
+    }
 }
 
 function drawVectors() {
@@ -223,44 +310,15 @@ function drawVectors() {
     }
 }
 
-function drawVector(x, y, force, originX, originY) {
-    const vectorScale = 6;
-    const arrowSize = 6;
-
-    const arrowX = originX + x * vectorScale;
-    const arrowY = originY + y * vectorScale; // Altere de "-" para "+"
-
-    context.beginPath();
-    context.moveTo(originX, originY);
-    context.lineTo(arrowX, arrowY);
-    context.stroke();
-
-    const angle = Math.atan2(y, x); // Remova o sinal negativo
-
-    context.beginPath();
-    context.moveTo(arrowX, arrowY);
-    context.lineTo(arrowX - arrowSize * Math.cos(angle - Math.PI / 6), arrowY - arrowSize * Math.sin(angle - Math.PI / 6));
-    context.lineTo(arrowX - arrowSize * Math.cos(angle + Math.PI / 6), arrowY - arrowSize * Math.sin(angle + Math.PI / 6));
-    context.closePath();
-    context.fill();
-
-    context.font = "14px Arial";
-    // fazer com que identifique kN e N
-    if(kn){
-        context.fillText(`${force}kN`, originX, originY);
-    }
-    else{
-        context.fillText(`${force}N`, originX, originY);
-    }
-    
-}
 
 function drawResultantVector(resultantVector) {
     const resultantMagnitude = document.getElementById("resultant-magnitude");
     const resultantDirection = document.getElementById("resultant-direction");
 
-    resultantMagnitude.textContent = `Magnitude: ${resultantVector.resultant_magnitude}`;
-    resultantDirection.textContent = `Direction: ${resultantVector.resultant_direction} degrees`;
+    // arredondar a magnitude para 2 casas decimais
+    resultantMagnitude.textContent = `Magnitude: ${resultantVector.resultant_magnitude.toFixed(2)}`;
+
+    resultantDirection.textContent = `Direction: ${resultantVector.resultant_direction.toFixed(2)}°`;
 
     // Agora você pode desenhar o vetor no Canvas usando as informações do resultado
     const magnitude = resultantVector.resultant_magnitude; // Use a magnitude para definir o comprimento do vetor

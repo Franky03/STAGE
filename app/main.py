@@ -1,3 +1,4 @@
+from flask import render_template, request, Flask, jsonify
 import sys
 import os
 
@@ -6,18 +7,32 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from utils import StaticsSolver
 
-solver = StaticsSolver(forces=[8000, -3000], angles=[90, 90])
 
-print(solver.calc_resultant_force())
+app = Flask(__name__, template_folder='templates')
 
-distances_a = [2, 6]
-print(solver.calc_moment(distances_a))
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-print(
-    solver.calc_vertical_reaction(
-        f_positions=[2, 6],
-        b_position=4
-    )
-)
+@app.route("/get-vectors", methods=["POST"])
+def send_data():
+    data = request.get_json()  
+    print(data)
+   
+    forces = []
+    angles = []
+    for i in data:
+        forces.append(i['force'])
+        angles.append(i['angle'])
+    print(forces)
+    print(angles)
 
+    solver = StaticsSolver(forces=forces, angles=angles)
+    print(solver.calc_resultant_force())
  
+    response_data = {"code": 200, "resultant": solver.calc_resultant_force()}
+    return jsonify(response_data)   
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
