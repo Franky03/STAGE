@@ -32,9 +32,16 @@ const triangles = [];
 const maxTriangles = 2;
 
 let kn = false;
+let lastSupportPosition = null;
+
+let data_to_tensor = {
+    vectors: vectors,
+    f_positions: [],
+    b_position: [],
+}
 
 updateCanvas();
-console.log(triangles)
+
       
 // Barra
 canvas.addEventListener('mousedown', (e) => {
@@ -150,6 +157,12 @@ document.getElementById('add-support').addEventListener('click', () => {
 
 canvas.addEventListener('mouseup', () => {
     isDraggingTriangle = false;
+    lastSupportPosition = Math.max(...triangles.map(triangle => triangle.x + triangle.base/2));
+    // diminuir a posição do ultimo suporte - a posição do suporte anterior
+    // para obter a distância entre os suportes
+
+    lastSupportPosition -= Math.min(...triangles.map(triangle => triangle.x + triangle.base/2));
+
 });
 
 
@@ -170,7 +183,7 @@ document.getElementById("toggle-add-vector").addEventListener("click", () => {
 });
 
 canvas.addEventListener('click', (event) => {
-    console.log("CLICK")
+    console.log(triangles)
     if (isAddingVectors) {
         const rect = canvas.getBoundingClientRect();
         const originX = event.clientX - rect.left;
@@ -209,14 +222,14 @@ clearVectorsButton.addEventListener('click', () => {
 
 function drawBarra() {
     // Desenhe a barra como retângulo
-    context.fillStyle = 'blue'; // Cor da barra
+    context.fillStyle = '#00A9FF'; // Cor da barra
     context.fillRect(barraX, barraY, barraComprimento, barraAltura);
     context.stroke();
 }
 
 
 
-function drawVector(x, y, force, originX, originY) {
+function drawVector(x, y, force, originX, originY, color = "black") {
     const vectorScale = 6;
     const arrowSize = 6;
 
@@ -238,6 +251,8 @@ function drawVector(x, y, force, originX, originY) {
     context.fill();
 
     context.font = "14px Arial";
+    context.fillStyle = color;
+    
     if (kn) {
         context.fillText(`${force.toFixed(2)}kN`, originX, originY);
         
@@ -329,15 +344,51 @@ function drawResultantVector(resultantVector) {
     const y = magnitude * Math.sin(radians);
 
     // Desenhe o vetor no Canvas, você pode usar a função drawVector que você já tem
-    drawVector(x, y, magnitude, canvas.width / 2, canvas.height / 2);
+    drawVector(x, y, magnitude, triangles[0].x + 10, triangles[0].y);
+}
+
+function drawReactions(reactions){
+    // const reaction1 = document.getElementById("reaction1");
+    // const reaction2 = document.getElementById("reaction2");
+
+    // reaction1.textContent = `Reação 1: ${reactions.reaction1.toFixed(2)}`;
+    // reaction2.textContent = `Reação 2: ${reactions.reaction2.toFixed(2)}`;
+
+    // Desenhe as reações no Canvas
+    const reactionA = reactions.a_reaction;
+    const reactionB = reactions.b_reaction;
+
+    console.log(reactionA, reactionB)
+
+    console.log(triangles)
+
+    drawVector(0, reactionA * -1, reactionA, triangles[0].x + triangles[0].base/2, triangles[0].y, "#000000");
+    drawVector(0, reactionB * -1, reactionB, triangles[1].x + triangles[1].base/2, triangles[1].y, "#000000");
+
 }
 
 document.getElementById("get-vectors").addEventListener("click", function () {
+
+    forcePositions = vectors.map((vector) => {
+        return Math.abs(lastSupportPosition - vector.originX);
+    });
+
+    // retirar também o x do primeiro suporte das forcesPositions
+
+    forcePositions = forcePositions.map((position) => {
+        return position - Math.min(...triangles.map(triangle => triangle.x + triangle.base/2));
+    });
+
+    data_to_tensor = {
+        vectors: vectors,
+        f_positions: forcePositions,
+        b_position: lastSupportPosition,
+    }
     
     // Realizar uma solicitação POST ao servidor Flask
     fetch("/get-vectors", {
         method: "POST",
-        body: JSON.stringify(vectors),
+        body: JSON.stringify(data_to_tensor),
         headers: {
             "Content-Type": "application/json"
         }
@@ -346,9 +397,12 @@ document.getElementById("get-vectors").addEventListener("click", function () {
     .then(result => {
         // Manipular a resposta do Flask (se necessário)
         console.log(result);
-        if (result.resultant) {
-            drawResultantVector(result.resultant);
+        if(result){
+            drawReactions(result.reactions);
         }
+        // if (result.resultant) {
+        //     drawResultantVector(result.resultant);
+        // }
     })
     .catch(error => {
         console.error("Erro ao enviar dados:", error);

@@ -19,9 +19,16 @@ def send_data():
     data = request.get_json()  
     print(data)
    
+    vectors = data['vectors']
+    f_positions = data['f_positions']
+    b_position = data['b_position']
+
+    print(f_positions, "Posições das forças")
+    print(b_position, "Posição do suporte b")
+
     forces = []
     angles = []
-    for i in data:
+    for i in vectors:
         forces.append(i['force'])
         angles.append(i['angle'])
     print(forces)
@@ -29,8 +36,11 @@ def send_data():
 
     solver = StaticsSolver(forces=forces, angles=angles)
     print(solver.calc_resultant_force())
+
+    #calcula o momento 
+    reactions = solver.calc_vertical_reaction(f_positions, b_position)
  
-    response_data = {"code": 200, "resultant": solver.calc_resultant_force()}
+    response_data = {"code": 200, "resultant": solver.calc_resultant_force(), "reactions": reactions}
     return jsonify(response_data)   
 
 if __name__ == '__main__':
