@@ -117,7 +117,7 @@ function drawTriangle(triangle) {
     ctx.lineTo(triangle.x + (triangle.base / 2), triangle.y); // Vértice superior
     ctx.closePath();
 
-    ctx.fillStyle = 'gray';
+    ctx.fillStyle = '#27374D';
     ctx.fill();
     ctx.stroke();
 }
@@ -222,7 +222,7 @@ clearVectorsButton.addEventListener('click', () => {
 
 function drawBarra() {
     // Desenhe a barra como retângulo
-    context.fillStyle = '#00A9FF'; // Cor da barra
+    context.fillStyle = '#686D76'; // Cor da barra
     context.fillRect(barraX, barraY, barraComprimento, barraAltura);
     context.stroke();
 }

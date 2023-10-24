@@ -1,0 +1,23 @@
+{
+  "name": "mechanics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build-css": "tailwindcss build app/static/style.css -o app/public/style.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Franky03/Mechanics.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Franky03/Mechanics/issues"
+  },
+  "homepage": "https://github.com/Franky03/Mechanics#readme",
+  "dependencies": {
+    "tailwindcss": "^3.3.3"
+  }
+}

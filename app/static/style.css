@@ -1,13 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
     font-family: Arial, sans-serif;
     background-color: #f5f5f5;
     margin: 0;
     padding: 0;
     display: flex;
+    position: relative;
   }
   
   #canvas-container {
     margin: 20px;
+    margin-top: 120px;
     margin-left: 25%;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -20,7 +26,9 @@ body {
 
   .input-container {
     margin: 20px;
-    margin-left: 0;
+    margin-top: 120px;
+    margin-left: 40px;
+
     width: 25%;
     min-width: 200px;
     max-width: 500px;
@@ -42,16 +50,20 @@ body {
   }
   
   .button-container button {
-    background-color: #007BFF;
+    background-color: #686D76;
     color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s;
+    font-size: 12px;
+    font-family: 'Brush Script MT', cursive;
   }
   
   .button-container button:hover {
-    background-color: #0056b3;
+    background-color: #EEEEEE;
+    color: #000;
+    
   }
   
   /* Estilo para os inputs de número */
@@ -83,18 +95,13 @@ input[type="number"] {
   button {
     padding: 10px 20px;
     margin: 5px;
-    background-color: #007BFF;
-    color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
   }
   
-  button:hover {
-    background-color: #00a2ff; /* Cor azul clara ao passar o mouse */
-  }
-  
+
   #resultant-vector-info {
     background-color: #fff;
     padding: 20px;
@@ -106,4 +113,61 @@ input[type="number"] {
     display: block;
     margin-top: 10px;
     font-weight: bold;
+  }
+
+  .title-text {
+    color: white;
+    font-size: 24px;
+    margin: 0;
+    margin-right: auto;
+    margin-left: 20px;
+  }
+
+  /* Estilos para o título "STAGE" na barra de navegação */
+  
+  .navbar h1 {
+    font-family: "Arial", sans-serif; /* Escolha a fonte que preferir */
+    font-size: 36px; /* Tamanho da fonte */
+    color: #19D3DA; /* Cor do texto */
+    text-transform: uppercase; /* Transforma o texto em maiúsculas */
+    letter-spacing: 4px; /* Espaçamento entre as letras */
+    margin: 0; /* Remove a margem padrão */
+  
+  }
+ 
+
+  /* Estilos para os links na barra de navegação */
+  .navbar a {
+    color: white;
+    text-decoration: none;
+    margin: 0 10px;
+  }
+
+  
+  .navbar a:hover {
+    text-decoration: underline;
+  }
+  
+
+  /* Mova os links para a direita */
+  .navbar .content {
+    display: flex;
+    align-items: center;
+  }
+
+  #title-stage {
+    display: flex;
+    justify-content: space-between; /* Centraliza os elementos na barra de navegação */
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #373A40; /* Cor de fundo moderna */
+    color: #F6F1F1; /* Cor do texto */
+    padding: 10px 20px; /* Espaçamento interno na barra de navegação */
+    height: 60px; /* Altura maior para a barra de navegação */
+    z-index: 999; /* Um valor alto para garantir que fique acima das outras divs */
+    border-bottom-left-radius: 1px;
+    border-bottom-right-radius: 1px;
   }
