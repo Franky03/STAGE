@@ -5,6 +5,7 @@ const angleInput = document.getElementById('angle-input');
 const addVectorButton = document.getElementById('add-vector');
 const undoVectorButton = document.getElementById('undo-vector');
 const clearVectorsButton = document.getElementById('clear-vectors');
+const comprimentoRange = document.getElementById('comprimento-range');
 
 const vectors = [];
 let isAddingVectors = false;
@@ -42,6 +43,16 @@ let data_to_tensor = {
 
 updateCanvas();
 
+comprimentoRange.addEventListener('input', () => {
+    // Obtenha o valor do controle deslizante
+    const novoComprimento = parseInt(comprimentoRange.value);
+
+    // Atualize o comprimento da barra
+    barraComprimento = novoComprimento;
+
+    // Redesenhe a barra
+    updateCanvas();
+});
       
 // Barra
 canvas.addEventListener('mousedown', (e) => {
