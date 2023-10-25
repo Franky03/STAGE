@@ -11,22 +11,44 @@
     <div class="title-text"><h1>STAGE</h1></div>
     
   </div>
+  <div class="container">
+    <div class="choice-container">
+      <label class="choice-label">
+          <button type="checkbox" id="choice-fig-bar">
+              <img width="35px" src="{{ url_for('static', filename='bar.png') }}">
+              <span>Bar</span>
+          </button>
+      </label>
+
+      <label class="choice-label">
+        <button type="checkbox" id="add-support">
+          <img width="35px" src="{{ url_for('static', filename='triangle.png') }}">
+          <span>Apoio</span>
+        </button>
+        
+          </button>
+      </label>
+  </div>
     <div id="canvas-container">
         <canvas id="vector-canvas" width="1000" height="600"></canvas>
       </div>
       <div class="input-container">
         <input type="number" id="force-input" placeholder="Força">
         <input type="number" id="angle-input" placeholder="Ângulo (em graus)">
-        <input type="range" id="comprimento-range" min="150" max="400" step="10" value="300">
+        <div id="div-range" class="hidden">
+          <h4>Comprimento da Barra</h4>
+          <input type="range" id="comprimento-range" min="150" max="400" step="10" value="300">
+        </div>
         <div class="result-container">
           <div class="button-container">
-            <button id="toggle-add-vector">Iniciar/Parar Adição de Vetores</button>
+            <button id="toggle-add-vector">Iniciar Adição de Vetores</button>
             <button id="undo-vector">Desfazer Último Vetor</button>
             <button id="clear-vectors">Limpar Vetores</button>
-            <button id="get-vectors">Obter Vetores</button>
-            <button id="add-support">Adicionar Apoio</button>
+            <button id="get-vectors">Obter Reações</button>
             <button id="resultant-force">Obter Força Resultante</button>
+      
           </div>
+
           <!-- <div id="resultant-vector-info">
             Resultant Vector:
             <span id="resultant-magnitude"></span>
@@ -34,6 +56,7 @@
           </div> -->
         </div>
       </div>
+    </div>
   
     <script src="../static/script.js"></script>
 </body>

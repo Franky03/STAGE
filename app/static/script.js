@@ -9,6 +9,12 @@ const comprimentoRange = document.getElementById('comprimento-range');
 
 const vectors = [];
 let isAddingVectors = false;
+let barraAdicionada = false;
+let trianguloAdicionado = false;
+
+let isDraggingTriangleRec = false;
+
+let triangleSize = 80; // Tamanho do triângulo
 
 let selectedOriginX = null;
 let selectedOriginY = null;
@@ -121,7 +127,7 @@ canvas.addEventListener('mousemove', (e) => {
 });
 
 
-function drawTriangle(triangle) {
+function drawSupport(triangle) {
     ctx.beginPath();
     ctx.moveTo(triangle.x, triangle.y + triangle.height); // Vértice inferior
     ctx.lineTo(triangle.x + triangle.base, triangle.y + triangle.height); // Vértice direito
@@ -132,8 +138,9 @@ function drawTriangle(triangle) {
     ctx.fill();
     ctx.stroke();
 }
+ 
 
-function addTriangle(x, y) {
+function addSupport(x, y) {
     if (triangles.length < maxTriangles) {
         let overlap = false;
         const newTriangle = { x, y, base: 20, height: 24 }; // Defina a base e altura desejadas
@@ -157,13 +164,18 @@ function addTriangle(x, y) {
         } else {
             alert("Triângulos não podem se sobrepor.");
         }
+
+        if(triangles.length == maxTriangles){
+            document.getElementById('add-support').classList.add('cuidado');
+        }
+
     } else {
-        alert("Limite máximo de triângulos atingido.");
+        alert("Você só pode adicionar 2 suportes.");
     }
 }
 
 document.getElementById('add-support').addEventListener('click', () => {
-    addTriangle(canvas.width/2 - 20, canvas.height/2 -20);
+    addSupport(canvas.width/2 - 20, canvas.height/2 -20);
 });
 
 canvas.addEventListener('mouseup', () => {
@@ -182,7 +194,6 @@ canvas.addEventListener('mouseup', () => {
 });
 
 
-drawBarra(); // Inicialmente, desenhe a barra na posição inicial
 
 document.getElementById("toggle-add-vector").addEventListener("click", () => {
     isAddingVectors = !isAddingVectors; // Inverta o estado
@@ -238,6 +249,33 @@ function drawBarra() {
     context.stroke();
 }
 
+function addBarra() {
+    if (barraAdicionada) {
+        // Se a barra já estiver presente, remova-a
+        barraAdicionada = false;
+        document.getElementById('choice-fig-bar').classList.remove('has-bar'); // Remove a classe
+    } else {
+        // Se a barra não estiver presente, adicione-a
+        barraAdicionada = true;
+        document.getElementById('choice-fig-bar').classList.add('has-bar'); // Adiciona a classe
+    }
+
+    // Chama a função de atualização do canvas para redesenhar tudo
+    toggleComprimentoRangeVisibility(); 
+    updateCanvas();
+}
+
+function toggleComprimentoRangeVisibility() {
+    const comprimentoRange = document.getElementById('div-range');
+    if (barraAdicionada) {
+        comprimentoRange.classList.remove('hidden');
+    } else {
+        comprimentoRange.classList.add('hidden');
+    }
+}
+
+
+document.getElementById('choice-fig-bar').addEventListener('click', addBarra);
 
 
 function drawVector(x, y, force, originX, originY, color = "black") {
@@ -323,10 +361,17 @@ function updateCanvas() {
 
     drawAxes(); // Desenha o plano cartesiano
     drawVectors(); // Desenha os vetores
-    drawBarra(); // Desenha a barra
+
+    if (barraAdicionada) {
+        drawBarra();
+    }
+
+    if(trianguloAdicionado){
+        drawRightTriangle();
+    }
 
     for (const triangle of triangles) {
-        drawTriangle(triangle);
+        drawSupport(triangle);
     }
 }
 
