@@ -70,7 +70,7 @@ class StaticsSolver:
 
         return h_reaction
     
-    def calc_distributed_force(self, x, type, **kwargs):
+    def calc_distributed_force(self, x, type, orientation='right' ,**kwargs):
         """
         Distribute a force in a beam.
         :param force: list of forces
@@ -80,19 +80,21 @@ class StaticsSolver:
         :return: dictionary with the resultant force and the point of application
 
         """
+        forces = kwargs.get('forces_d')
+        force_t = kwargs.get('force_t')
         
-        if not isinstance(self.forces, list):
-            self.forces = [self.forces]
+        if not isinstance(forces, list):
+            forces = [forces]
 
         result = {}
 
         if type == 'triangle':
-            orientation = kwargs.get('orientation')
+            orientation = orientation.lower()
 
             if orientation not in ['left', 'right']:
                 raise ValueError("Invalid orientation for triangle force distribution.")
 
-            r_force = x * self.forces[0] / 2
+            r_force = x * force_t / 2
             
             if orientation == 'left':
                 point = x/3
@@ -105,12 +107,13 @@ class StaticsSolver:
             }
 
         elif type == 'rectangle':
-            r_force = x * self.forces[0]
+
+            r_force = x * forces[0]
             point = x/2
 
             result = {
-                "r_force": round(r_force, 4),
-                "point": round(point, 4)
+                "r_force": round(r_force, 2),
+                "point": round(point, 2)
             }
 
         elif type == 'trapezoid':
@@ -119,17 +122,21 @@ class StaticsSolver:
             force_triangle = max(force) - min(force)
             force_rectangle = min(force)
 
+            print(force_triangle, force_rectangle, "FOces")
+
             # recursive call
-            triangle = self.calc_distributed_force(x, 'triangle', orientation= kwargs.get('orientation'))
-            rectangle = self.calc_distributed_force(x, 'rectangle')
+            triangle = self.calc_distributed_force(x, 'triangle', orientation= orientation, force_t = force_triangle)
+            rectangle = self.calc_distributed_force(x, 'rectangle', forces_d = [force_rectangle])
 
             r_forces = {'triangle': triangle['r_force'], 'rectangle': rectangle['r_force']}
 
             points = {'triangle': triangle['point'], 'rectangle': rectangle['point']}
 
+            print("r_forces", r_forces, "points", points)
+
             result = {
-                'r_force': r_forces,
-                'point': points
+                'r_forces': r_forces,
+                'points': points
             }
 
         else:

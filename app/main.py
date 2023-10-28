@@ -35,13 +35,51 @@ def send_data():
     print(angles)
 
     solver = StaticsSolver(forces=forces, angles=angles)
-    print(solver.calc_resultant_force())
-
-    #calcula o momento 
     reactions = solver.calc_vertical_reaction(f_positions, b_position)
- 
     response_data = {"code": 200, "resultant": solver.calc_resultant_force(), "reactions": reactions}
     return jsonify(response_data)   
+
+@app.route("/get-distributed", methods=["POST"])
+def send_distributed():
+    data = request.get_json()  
+    print(data)
+
+    solver = StaticsSolver(forces=[], angles=[])
+    r = {}
+    
+    if(data['type'] == 'rectangle'):
+        r = solver.calc_distributed_force(forces_d = data['force'], x=data['distance'], type='rectangle')
+        response_data = {"code": 200, "position": r['point'], "resultant": r['r_force']}
+
+    elif(data['type'] == 'trapezoid'):
+        solver = StaticsSolver(forces=[data['force'], data['forceMenor']], angles=[90,90])
+        r = solver.calc_distributed_force(x=data['distance'], type='trapezoid', orientation=data['orientation'])
+        response_data = {"code": 200, "positions": r['points'], "resultants": r['r_forces']}
+    elif(data['type'] == 'triangle'):
+        r = solver.calc_distributed_force(x=data['distance'], type='triangle', orientation=data['orientation'], force_t=data['force'])
+        response_data = {"code": 200, "position": r['point'], "resultant": r['r_force']}
+
+ 
+    
+    print("RESPONSE DATA", response_data)
+    return jsonify(response_data)
+
+@app.route("/f_resutant", methods=["POST"])
+def send_f_resultant():
+    data = request.get_json()
+    vectors = data['vectors']
+    forces = []
+    angles = []
+    for i in vectors:
+        forces.append(i['force'])
+        angles.append(i['angle'])
+    
+    solver = StaticsSolver(forces=forces, angles=angles)
+    r = solver.calc_resultant_force()
+
+    response_data = {"code": 200, "resultant": r}
+
+    return jsonify(response_data)
 
 if __name__ == '__main__':
     app.run(debug=True)

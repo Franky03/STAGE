@@ -26,7 +26,9 @@
           <span>Apoio</span>
         </button>
         
-          </button>
+        <button class="distributed-f" id="add-rectangle">Adicionar Força Retangular</button>
+        <button class="distributed-f" id="add-triangle">Adicionar Força Triangular</button>
+        <button class="distributed-f" id="add-trapezoid">Adicionar Força Trapézio</button>
       </label>
   </div>
     <div id="canvas-container">
@@ -57,6 +59,28 @@
         </div>
       </div>
     </div>
+
+    <div id="myModal" class="modal" style="text-align:center">
+      <div id="modal-content-change" class="modal-content">
+          <span id="closeModal" style="float: right;">&times;</span>
+          <h2 style="position: relative; left: 10px;">Força Distribuída</h2>
+          <input style="margin-top: 20px;" type="number" id="force-input-distributed" placeholder="Força (N)">
+          <input style="margin-top: 20px; position: relative; left: 30px; display: none;" type="number" id="force-menor-input-distributed" placeholder="Força Menor (N)">
+          <input style="margin-top: 20px;" type="number" id="length-input-distributed" placeholder="Comprimento (metros)">
+          
+          <div style="display: none; margin-top: 20px;" id="orientation">
+            <label for="orientation">Orientação</label>
+            <div style="display: flex; align-items: center; justify-content: space-between; position: relative; left: 30px;">
+                <input style="margin-top: 20px;"  type="radio" id="orientation-right" name="orientation" value="right">
+                <label style="margin-top: 20px; position: relative; right: 80px;" for="orientation-right"><img id="transform-left" width="35px" src="{{ url_for('static', filename='triangle.png') }}"></label>
+        
+                <input style="margin-top: 20px;" type="radio" id="orientation-left" name="orientation" value="left">
+                <label style="margin-top: 20px; position: relative; right: 80px;" for="orientation-left"><img  width="35px" src="{{ url_for('static', filename='triangle.png') }}"></label>
+            </div>
+        </div>
+          <button style="margin-top: 50px;" id="add-distributed-force">Adicionar Força Distribuída</button>
+      </div>
+  </div>
   
     <script src="../static/script.js"></script>
 </body>

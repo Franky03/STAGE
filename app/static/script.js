@@ -7,7 +7,12 @@ const undoVectorButton = document.getElementById('undo-vector');
 const clearVectorsButton = document.getElementById('clear-vectors');
 const comprimentoRange = document.getElementById('comprimento-range');
 
+let rectangleForce = {};  // Variáveis para força retangular
+let triangleForce = {};   // Variáveis para força triangular
+let trapezoidForce = {};  // Variáveis para força trapezoidal
+
 const vectors = [];
+
 let isAddingVectors = false;
 let barraAdicionada = false;
 let trianguloAdicionado = false;
@@ -46,6 +51,12 @@ let data_to_tensor = {
     f_positions: [],
     b_position: [],
 }
+
+let clickX = null;
+let clickY = null;
+let isClicking = false;
+let isClickingTrap = false;
+let isClinckingTriangle = false;
 
 updateCanvas();
 
@@ -204,18 +215,20 @@ document.getElementById("toggle-add-vector").addEventListener("click", () => {
     }
 });
 
+
 canvas.addEventListener('click', (event) => {
-    console.log(triangles)
     if (isAddingVectors) {
         const rect = canvas.getBoundingClientRect();
         const originX = event.clientX - rect.left;
         const originY = event.clientY - rect.top;
+        console.log(originX, originY);
 
         const force = parseFloat(forceInput.value);
         const angle = parseFloat(angleInput.value);
 
         if (!isNaN(force) && !isNaN(angle)) {
             const radians = (angle * Math.PI) / 180;
+            
             const x = force * Math.cos(radians);
             const y = force * Math.sin(radians);
 
@@ -223,10 +236,39 @@ canvas.addEventListener('click', (event) => {
             const adjustedOriginY = originY - y * 6;
 
             vectors.push({ x, y, force, angle, originX: adjustedOriginX, originY: adjustedOriginY });
-            console.log(vectors);
+            
             updateCanvas();
         }
     }
+
+
+    else if(isClicking){
+        const rect = canvas.getBoundingClientRect();
+        clickX = event.clientX - rect.left;
+        clickY = event.clientY - rect.top;
+
+        isClicking = !isClicking;
+        recDist.click();
+    }
+
+    else if(isClickingTrap){
+        const rect = canvas.getBoundingClientRect();
+        clickX = event.clientX - rect.left;
+        clickY = event.clientY - rect.top;
+
+        isClickingTrap = !isClickingTrap;
+        trapDist.click();
+    }
+
+    else if(isClinckingTriangle){
+        const rect = canvas.getBoundingClientRect();
+        clickX = event.clientX - rect.left;
+        clickY = event.clientY - rect.top;
+
+        isClinckingTriangle = !isClinckingTriangle;
+        triDist.click();
+    }
+
 });
 
 undoVectorButton.addEventListener('click', () => {
@@ -277,16 +319,23 @@ function toggleComprimentoRangeVisibility() {
 
 document.getElementById('choice-fig-bar').addEventListener('click', addBarra);
 
+let randomPositionsList = [];
 
-function drawVector(x, y, force, originX, originY, color = "black") {
+function drawVector(x, y, force, originX, originY, color = "black", is_reaction=null, fillwhere=null) {
+    console.log("FILLWHERE", fillwhere)
     const vectorScale = 6;
     const arrowSize = 6;
 
+    // Check if the force is greater than 100 N.
+
     const arrowX = originX + x * vectorScale;
-    const arrowY = originY + y * vectorScale;
+    let arrowY = originY + y * vectorScale;
+    
 
     context.beginPath();
+    
     context.moveTo(originX, originY);
+    
     context.lineTo(arrowX, arrowY);
     context.stroke();
 
@@ -301,13 +350,32 @@ function drawVector(x, y, force, originX, originY, color = "black") {
 
     context.font = "14px Arial";
     context.fillStyle = color;
-    
-    if (kn) {
-        context.fillText(`${force.toFixed(2)}kN`, originX, originY);
-        
-    } else {
-        context.fillText(`${force.toFixed(2)}N`, originX, originY);
+
+    // GERAR UM NUMERO ALEATORIO ENTRE 30 E 270
+    let randomPosition = Math.floor(Math.random() * (270 - 30 + 1) + 30);
+
+    while(randomPositionsList.includes(randomPosition)){
+        randomPosition = Math.floor(Math.random() * (270 - 30 + 1) + 30);
     }
+
+    randomPositionsList.push(randomPosition);
+
+
+    if (force >= 45) {
+        // If the force is greater than 100 N, display the scaled force value in kN.
+        context.fillText(`${force.toFixed(2)/1000}kN`, originX, randomPosition);
+    } else {
+        // Otherwise, display the original force value in N.
+        if(fillwhere){
+            context.fillText(`${force.toFixed(2)}N`, originX, fillwhere);
+        }
+        else{
+            context.fillText(`${force.toFixed(2)}N`, originX, originY);
+        }
+        
+    }
+
+    console.log("VECTORS", vectors);
 }
 
 function drawAxes() {
@@ -404,22 +472,15 @@ function drawResultantVector(resultantVector) {
 }
 
 function drawReactions(reactions){
-    // const reaction1 = document.getElementById("reaction1");
-    // const reaction2 = document.getElementById("reaction2");
-
-    // reaction1.textContent = `Reação 1: ${reactions.reaction1.toFixed(2)}`;
-    // reaction2.textContent = `Reação 2: ${reactions.reaction2.toFixed(2)}`;
-
     // Desenhe as reações no Canvas
     const reactionA = reactions.a_reaction;
     const reactionB = reactions.b_reaction;
 
-    console.log(reactionA, reactionB)
+    console.log(reactionA, reactionB, "REAÇÕES")
 
-    console.log(triangles)
 
-    drawVector(0, reactionA * -1, reactionA, triangles[0].x + triangles[0].base/2, triangles[0].y, "#000000");
-    drawVector(0, reactionB * -1, reactionB, triangles[1].x + triangles[1].base/2, triangles[1].y, "#000000");
+    drawVector(0, reactionA * -1, reactionA, triangles[0].x + triangles[0].base/2, triangles[0].y, "#000000",true);
+    drawVector(0, reactionB * -1, reactionB, triangles[1].x + triangles[1].base/2, triangles[1].y, "#000000", true);
 
 }
 
@@ -452,13 +513,311 @@ document.getElementById("get-vectors").addEventListener("click", function () {
     .then(response => response.json())
     .then(result => {
         // Manipular a resposta do Flask (se necessário)
-        console.log(result);
+        console.log(result, "RESULTADO");
         if(result){
             drawReactions(result.reactions);
         }
         // if (result.resultant) {
         //     drawResultantVector(result.resultant);
         // }
+    })
+    .catch(error => {
+        console.error("Erro ao enviar dados:", error);
+    });
+});
+
+let forceType = null;
+
+var modal = document.getElementById("myModal");
+var closeModalButton = document.getElementById("closeModal");
+
+var recDist = document.getElementById('add-rectangle');
+var triDist = document.getElementById('add-triangle');
+var trapDist = document.getElementById('add-trapezoid');
+
+function deactiveButtons(){
+    recDist.classList.remove('modal-on');
+    triDist.classList.remove('modal-on');
+    trapDist.classList.remove('modal-on');
+}
+
+recDist.addEventListener('click', function(){
+
+    document.getElementById('force-menor-input-distributed').style.display = 'none'; // Ocultar o campo
+    document.getElementById('orientation').style.display = 'none';
+    document.getElementById("modal-content-change").style.height = "30%"
+    recDist.classList.add('modal-on');
+    isClicking = !isClicking;
+
+    // esperar o click do mouse e só abrir o modal depois
+    if(clickX && clickY){
+        modal.style.display = "block";
+    }
+    
+    forceType = 'rectangle';
+    
+})
+
+
+triDist.addEventListener('click', function(){
+    document.getElementById('force-menor-input-distributed').style.display = 'none'; // Ocultar o campo
+    document.getElementById('orientation').style.display = 'block';
+    document.getElementById("modal-content-change").style.height = "40%"
+    triDist.classList.add('modal-on');
+
+    isClinckingTriangle = !isClinckingTriangle;
+
+    if(clickX && clickY){
+        modal.style.display = "block";
+    }
+
+    forceType = 'triangle';
+    
+})
+
+trapDist.addEventListener('click', function(){
+    document.getElementById('force-menor-input-distributed').style.display = 'block';
+    document.getElementById('orientation').style.display = 'block';
+    document.getElementById("modal-content-change").style.height = "48%"
+    trapDist.classList.add('modal-on');
+
+    isClickingTrap = !isClickingTrap;
+
+    // esperar o click do mouse e só abrir o modal depois
+    if(clickX && clickY){
+        modal.style.display = "block";
+    }
+
+    forceType = 'trapezoid';
+    
+})
+
+closeModalButton.addEventListener("click", function() {
+    modal.style.display = "none";
+    deactiveButtons();
+
+});
+
+window.addEventListener("click", function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+        deactiveButtons();
+    }
+});
+
+let getModalInputsButton = document.getElementById('add-distributed-force');
+
+getModalInputsButton.addEventListener('click', function(){
+
+    let OK = null;
+
+    let force = parseFloat(document.getElementById('force-input-distributed').value);
+    let distance_t = parseFloat(document.getElementById('length-input-distributed').value);
+
+    let distance = (distance_t/100) * canvas.width;
+
+    let forceMenor = null;
+    let radioButtons = null;
+
+    if (forceType === 'trapezoid') {
+        forceMenor = parseFloat(document.getElementById('force-menor-input-distributed').value);
+    }
+    
+    if (forceType === 'triangle' || forceType === 'trapezoid') {
+        radioButtons = document.getElementsByName("orientation");
+        var selectedOption = null;
+        for (var i = 0; i < radioButtons.length; i++) {
+            if (radioButtons[i].checked) {
+                selectedOption = radioButtons[i].value;
+                break;
+            }
+        }
+
+        if (selectedOption) {
+            console.log("Opção selecionada: " + selectedOption);
+        } else {
+            console.log("Nenhuma opção selecionada");
+        }
+    }
+
+    if(forceType == 'trapezoid'){
+        if (force && distance_t && forceMenor){
+            trapezoidForce = {force: force, distance: distance_t, forceMenor: forceMenor, type: forceType, orientation: selectedOption};
+
+            fetch("/get-distributed", {
+                method: "POST",
+                body: JSON.stringify(trapezoidForce),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log(result, "RESULTADO")
+                
+                let rforces = result.resultants;
+                let rdistances = result.positions;
+
+                let rforce_a = rforces.rectangle;
+                let rforce_b = rforces.triangle;
+
+                let rdistance_a = (rdistances.rectangle/100) * canvas.width;
+                let rdistance_b = (rdistances.triangle/100) * canvas.width;
+
+
+                const radians = (90 * Math.PI) / 180;
+                const x1 = rforce_a * Math.cos(radians);
+                const y1 = rforce_a * Math.sin(radians);
+
+                const x2 = rforce_b * Math.cos(radians);
+                const y2 = rforce_b * Math.sin(radians);
+
+                vectors.push({ x: x1, y: y1, force: rforce_a, angle: 90, originX: clickX + rdistance_a, originY: clickY-y1*6});
+                drawVector(x1, y1, rforce_a, clickX + rdistance_a , clickY-y1*6 );
+
+                vectors.push({ x: x2, y: y2, force: rforce_b, angle: 90, originX: clickX + rdistance_b, originY: clickY-y2*6});
+                if(x1 == x2) drawVector(x2, y2, rforce_b, clickX + rdistance_b , (clickY-y2*6),"#000", null ,fillwhere =  (clickY-y2*6) + 20);
+                else drawVector(x2, y2, rforce_b, clickX + rdistance_b , clickY-y2*6);
+                clickX = null;
+                clickY = null;
+
+                isClickingTrap = false;
+                
+                
+            })
+
+            OK = true;
+    
+        } else {
+            alert('Preencha todos os campos!');
+        }
+    }
+    else{
+        if (force && distance){
+            if(forceType == 'rectangle'){
+                rectangleForce = {force: force, distance: distance_t, type: forceType};
+
+                fetch("/get-distributed", {
+                    method: "POST",
+                    body: JSON.stringify(rectangleForce),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => response.json())
+                .then(result => {
+                    
+                    
+                    let rforce = result.resultant;
+                    let rdistance = (result.position/100) * canvas.width ;
+
+                    const radians = (90 * Math.PI) / 180;
+                    const x = rforce * Math.cos(radians);
+                    const y = rforce * Math.sin(radians);
+
+                    vectors.push({ x, y, force: rforce, angle: 90, originX: clickX + rdistance, originY: clickY-y*6});
+                    drawVector(x, y, rforce, clickX + rdistance , clickY-y*6 );
+
+                    clickX = null;
+                    clickY = null;
+
+                    isClicking = false;
+                    
+                    
+                })
+                .catch(error => {
+                    console.error("Erro ao enviar dados:", error);
+                });
+
+            }
+            else if(forceType == 'triangle'){
+                triangleForce = {force: force, distance: distance_t, type: forceType, orientation: selectedOption};
+
+                fetch("/get-distributed", {
+                    method: "POST",
+                    body: JSON.stringify(triangleForce),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result, "RESULTADOTRI")
+                    
+                    let rforce = result.resultant;
+                    let rdistance = (result.position/100) * canvas.width;
+
+                    const radians = (90 * Math.PI) / 180;
+                    const x = rforce * Math.cos(radians);
+                    const y = rforce * Math.sin(radians);
+
+                    vectors.push({ x, y, force: rforce, angle: 90, originX: clickX + rdistance, originY: clickY-y*6});
+                    drawVector(x, y, rforce, clickX + rdistance , clickY-y*6 );
+
+                    clickX = null;
+                    clickY = null;
+
+                    isClinckingTriangle = false;
+                    
+                    
+                })
+                .catch(error => {
+                    console.error("Erro ao enviar dados:", error);
+                });
+            }
+
+            OK = true;
+    
+        } else {
+            
+            alert('Preencha todos os campos!');
+        }
+    }
+
+    if(OK){
+        modal.style.display = "none";
+        deactiveButtons();
+    }
+}
+);
+
+
+document.getElementById('resultant-force').addEventListener('click', function(){
+    data_to_tensor = {
+        vectors: vectors,
+    }
+
+    fetch("/f_resutant", {
+        method: "POST",
+        body: JSON.stringify(data_to_tensor),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log(result, "RESULTADO")
+
+        // desenhar o vetor resultante
+        let data = result.resultant;
+
+        // {
+        //     "resultant_direction": 90,
+        //     "resultant_magnitude": 36,
+        //     "x_component": 2.204364238465236e-15,
+        //     "y_component": 36
+        // }
+
+        const angle = data.resultant_direction;
+        const magnitude = data.resultant_magnitude;
+        const x = data.x_component;
+        const y = data.y_component;
+
+        const radians = (angle * Math.PI) / 180;
+
+        drawVector(x, y, magnitude, canvas.width/2, canvas.height/2, "#FF0000");
+
+
     })
     .catch(error => {
         console.error("Erro ao enviar dados:", error);
