@@ -47,8 +47,8 @@ class StaticsSolver:
         a_reaction = (self.calc_resultant_force()['y_component']) - b_reaction
 
         return {
-            'a_reaction': b_reaction,
-            'b_reaction': a_reaction
+            'a_reaction': a_reaction,
+            'b_reaction': b_reaction
         }
 
     def calc_horizontal_reaction(self, f_positions, b_position, **kwargs):

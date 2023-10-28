@@ -75,6 +75,12 @@ input[type="number"] {
     color: #333;
     transition: border-color 0.3s;
   }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+  }
   
   /* Estilo ao passar o mouse */
   input[type="number"]:hover {
@@ -188,7 +194,7 @@ input[type="number"] {
     flex-direction: column;
     align-items: center;
     margin-top: 120px;
-    height: 50%;
+    height: 41%;
     position: relative;
     left: 22%;
 }

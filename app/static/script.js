@@ -58,6 +58,8 @@ let isClicking = false;
 let isClickingTrap = false;
 let isClinckingTriangle = false;
 
+let axesL = 50;
+
 updateCanvas();
 
 comprimentoRange.addEventListener('input', () => {
@@ -70,7 +72,7 @@ comprimentoRange.addEventListener('input', () => {
     // Redesenhe a barra
     updateCanvas();
 });
-      
+
 // Barra
 canvas.addEventListener('mousedown', (e) => {
     const mouseX = e.clientX - canvas.getBoundingClientRect().left;
@@ -209,9 +211,9 @@ canvas.addEventListener('mouseup', () => {
 document.getElementById("toggle-add-vector").addEventListener("click", () => {
     isAddingVectors = !isAddingVectors; // Inverta o estado
     if (isAddingVectors) {
-        document.getElementById("toggle-add-vector").textContent = "Parar Adição de Vetores";
+        document.getElementById("toggle-add-vector").textContent = "Parar Vetores";
     } else {
-        document.getElementById("toggle-add-vector").textContent = "Iniciar Adição de Vetores";
+        document.getElementById("toggle-add-vector").textContent = "Adicionar Vetores";
     }
 });
 
@@ -321,8 +323,8 @@ document.getElementById('choice-fig-bar').addEventListener('click', addBarra);
 
 let randomPositionsList = [];
 
-function drawVector(x, y, force, originX, originY, color = "black", is_reaction=null, fillwhere=null) {
-    console.log("FILLWHERE", fillwhere)
+function drawVector(x, y, force, originX, originY, color = "black", is_reaction=null, fillwhere=null, is_resultant=null) {
+    
     const vectorScale = 6;
     const arrowSize = 6;
 
@@ -333,9 +335,9 @@ function drawVector(x, y, force, originX, originY, color = "black", is_reaction=
     
 
     context.beginPath();
+    context.strokeStyle = is_reaction || is_resultant ? "#19D3DA" : color;
     
     context.moveTo(originX, originY);
-    
     context.lineTo(arrowX, arrowY);
     context.stroke();
 
@@ -361,7 +363,7 @@ function drawVector(x, y, force, originX, originY, color = "black", is_reaction=
     randomPositionsList.push(randomPosition);
 
 
-    if (force >= 45) {
+    if (force >= 45 && !is_resultant) {
         // If the force is greater than 100 N, display the scaled force value in kN.
         context.fillText(`${force.toFixed(2)/1000}kN`, originX, randomPosition);
     } else {
@@ -375,7 +377,6 @@ function drawVector(x, y, force, originX, originY, color = "black", is_reaction=
         
     }
 
-    console.log("VECTORS", vectors);
 }
 
 function drawAxes() {
@@ -390,7 +391,7 @@ function drawAxes() {
     context.stroke();
 
     // Rótulos no eixo X
-    const stepX = canvas.width / 20; // Espaçamento entre os rótulos
+    const stepX = canvas.width / axesL   ; // Espaçamento entre os rótulos
 
     for (let x = stepX; x < canvas.width; x += stepX) {
         context.beginPath();
@@ -399,8 +400,8 @@ function drawAxes() {
         context.stroke();
 
         context.fillStyle = labelColor;
-        context.font = "12px Arial"; // Defina o tamanho e a fonte do rótulo
-        context.fillText((x - canvas.width / 2) / (canvas.width / 100), x - 10, canvas.height / 2 + 20);
+        context.font = "10px Arial"; // Defina o tamanho e a fonte do rótulo
+        context.fillText((x - canvas.width / 2) / (canvas.width / 100), x - 3, canvas.height / 2 + 15);
     }
 
     // Eixo Y (vertical)
@@ -419,7 +420,7 @@ function drawAxes() {
         context.stroke();
 
         context.fillStyle = labelColor;
-        context.font = "12px Arial"; // Defina o tamanho e a fonte do rótulo
+        context.font = "10px Arial"; // Defina o tamanho e a fonte do rótulo
         context.fillText((canvas.height / 2 - y) / (canvas.height / 100), canvas.width / 2 - 30, y + 5);
     }
 }
@@ -479,8 +480,8 @@ function drawReactions(reactions){
     console.log(reactionA, reactionB, "REAÇÕES")
 
 
-    drawVector(0, reactionA * -1, reactionA, triangles[0].x + triangles[0].base/2, triangles[0].y, "#000000",true);
-    drawVector(0, reactionB * -1, reactionB, triangles[1].x + triangles[1].base/2, triangles[1].y, "#000000", true);
+    drawVector(0, reactionA * -1, reactionA, triangles[0].x + triangles[0].base/2, triangles[0].y, "#19D3DA", true);
+    drawVector(0, reactionB * -1, reactionB, triangles[1].x + triangles[1].base/2, triangles[1].y, "#19D3DA", true);
 
 }
 
@@ -815,11 +816,17 @@ document.getElementById('resultant-force').addEventListener('click', function(){
 
         const radians = (angle * Math.PI) / 180;
 
-        drawVector(x, y, magnitude, canvas.width/2, canvas.height/2, "#FF0000");
+        drawVector(x, y, magnitude, canvas.width/2, canvas.height/2, "#000", false, null, true);
 
 
     })
     .catch(error => {
         console.error("Erro ao enviar dados:", error);
     });
+});
+
+document.getElementById("clean-supports").addEventListener("click", function(){
+    triangles.length = 0;
+    updateCanvas();
+    document.getElementById('add-support').classList.remove('cuidado');
 });

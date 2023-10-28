@@ -4,6 +4,7 @@
     <title>STAGE</title>
     <link rel="stylesheet" type="text/css" href="../static/style.css">
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
 </head>
 <body>
   
@@ -22,13 +23,14 @@
 
       <label class="choice-label">
         <button type="checkbox" id="add-support">
-          <img width="35px" src="{{ url_for('static', filename='triangle.png') }}">
+          <img width="35px" src="{{ url_for('static', filename='plain-triangle.png') }}">
           <span>Apoio</span>
         </button>
+      </label>
         
-        <button class="distributed-f" id="add-rectangle">Adicionar Força Retangular</button>
-        <button class="distributed-f" id="add-triangle">Adicionar Força Triangular</button>
-        <button class="distributed-f" id="add-trapezoid">Adicionar Força Trapézio</button>
+        <button class="distributed-f" id="add-rectangle">Força Retangular</button>
+        <button class="distributed-f" id="add-triangle">Força Triangular</button>
+        <button class="distributed-f" id="add-trapezoid">Força Trapézio</button>
       </label>
   </div>
     <div id="canvas-container">
@@ -39,16 +41,16 @@
         <input type="number" id="angle-input" placeholder="Ângulo (em graus)">
         <div id="div-range" class="hidden">
           <h4>Comprimento da Barra</h4>
-          <input type="range" id="comprimento-range" min="150" max="400" step="10" value="300">
+          <input type="range" id="comprimento-range" min="100" max="400" step="10" value="300">
         </div>
         <div class="result-container">
           <div class="button-container">
-            <button id="toggle-add-vector">Iniciar Adição de Vetores</button>
+            <button id="toggle-add-vector">Adicionar Vetores</button>
+            <button id="get-vectors">Reações</button>
+            <button id="resultant-force">Força Resultante</button>
             <button id="undo-vector">Desfazer Último Vetor</button>
             <button id="clear-vectors">Limpar Vetores</button>
-            <button id="get-vectors">Obter Reações</button>
-            <button id="resultant-force">Obter Força Resultante</button>
-      
+            <button id="clean-supports">Limpar Suportes</button>
           </div>
 
           <!-- <div id="resultant-vector-info">
